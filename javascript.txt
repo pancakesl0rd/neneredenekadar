@@ -1,0 +1,131 @@
+document.addEventListener('DOMContentLoaded', () => {
+    const productList = document.getElementById('product-list');
+    const cart = document.getElementById('cart');
+    const regulationDiv = document.getElementById('regulation');
+    
+    const categories = {
+        'Yiyecekler': [
+            { name: 'Pirinç', minPrice: 10, maxPrice: 20 },
+            { name: 'Ekmek', minPrice: 1, maxPrice: 2 },
+            { name: 'Makarna', minPrice: 5, maxPrice: 10 },
+            { name: 'Bulgur', minPrice: 8, maxPrice: 15 }
+        ],
+        'Ýçecekler': [
+            { name: 'Su', minPrice: 1, maxPrice: 3 },
+            { name: 'Süt', minPrice: 5, maxPrice: 8 },
+            { name: 'Meyve Suyu', minPrice: 7, maxPrice: 15 },
+            { name: 'Ayran', minPrice: 3, maxPrice: 5 },
+            { name: 'Gazoz', minPrice: 2, maxPrice: 4 }
+        ],
+        'Manav Reyonu': [
+            { name: 'Domates', minPrice: 3, maxPrice: 6 },
+            { name: 'Salatalýk', minPrice: 2, maxPrice: 4 },
+            { name: 'Muz', minPrice: 10, maxPrice: 20 },
+            { name: 'Çilek', minPrice: 15, maxPrice: 25 },
+            { name: 'Elma', minPrice: 5, maxPrice: 10 }
+        ]
+    };
+
+    const marketNames = ['Market A', 'Market B', 'Market C', 'Market D', 'Market E'];
+
+    const cartItems = [];
+
+    function getRandomPrice(min, max) {
+        return (Math.random() * (max - min) + min).toFixed(2);
+    }
+
+    function addProductToCart(product, price) {
+        const existingItem = cartItems.find(item => item.name === product.name);
+        if (existingItem) {
+            existingItem.quantity += 1;
+            existingItem.totalPrice += parseFloat(price);
+        } else {
+            cartItems.push({ name: product.name, price: parseFloat(price), quantity: 1, totalPrice: parseFloat(price) });
+        }
+        updateCart();
+    }
+
+    function updateCart() {
+        if (cartItems.length === 0) {
+            cart.innerHTML = '<p>Sepetinizde ürün yok.</p>';
+        } else {
+            cart.innerHTML = '';
+            const ul = document.createElement('ul');
+            let total = 0;
+            cartItems.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = `${item.name} - ${item.quantity} adet - ?${item.totalPrice.toFixed(2)}`;
+                ul.appendChild(li);
+                total += item.totalPrice;
+            });
+            cart.appendChild(ul);
+            const totalDiv = document.createElement('div');
+            totalDiv.textContent = `Toplam: ?${total.toFixed(2)}`;
+            cart.appendChild(totalDiv);
+        }
+    }
+
+    function createProductElement(categoryName, product) {
+        const categoryDiv = document.createElement('div');
+        categoryDiv.classList.add('category');
+        
+        const categoryHeader = document.createElement('h3');
+        categoryHeader.textContent = categoryName;
+        categoryDiv.appendChild(categoryHeader);
+        
+        const productDiv = document.createElement('div');
+        productDiv.classList.add('product');
+
+        const productName = document.createElement('span');
+        productName.classList.add('product-name');
+        productName.textContent = product.name;
+        productDiv.appendChild(productName);
+
+        const productPrices = document.createElement('div');
+        productPrices.classList.add('product-price');
+        
+        let minPrice = Infinity;
+        let maxPrice = -Infinity;
+
+        marketNames.forEach(market => {
+            const price = getRandomPrice(product.minPrice, product.maxPrice);
+            minPrice = Math.min(minPrice, price);
+            maxPrice = Math.max(maxPrice, price);
+            
+            const priceSpan = document.createElement('span');
+            priceSpan.textContent = `${market}: ?${price}`;
+            productPrices.appendChild(priceSpan);
+
+            const addButton = document.createElement('button');
+            addButton.textContent = '+';
+            addButton.addEventListener('click', () => addProductToCart(product, price));
+            productPrices.appendChild(addButton);
+        });
+
+        productDiv.appendChild(productPrices);
+        categoryDiv.appendChild(productDiv);
+
+        productList.appendChild(categoryDiv);
+    }
+
+    function displayProducts() {
+        Object.keys(categories).forEach(categoryName => {
+            const category = categories[categoryName];
+            category.forEach(product => createProductElement(categoryName, product));
+        });
+    }
+
+    function displayRegulationPrices() {
+        Object.keys(categories).forEach(categoryName => {
+            const category = categories[categoryName];
+            category.forEach(product => {
+                const regulationItem = document.createElement('p');
+                regulationItem.textContent = `${product.name} - Min: ?${product.minPrice.toFixed(2)} - Max: ?${product.maxPrice.toFixed(2)}`;
+                regulationDiv.appendChild(regulationItem);
+            });
+        });
+    }
+
+    displayProducts();
+    displayRegulationPrices();
+});
